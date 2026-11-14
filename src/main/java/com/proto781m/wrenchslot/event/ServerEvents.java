@@ -3,6 +3,7 @@ package com.proto781m.wrenchslot.event;
 import com.proto781m.wrenchslot.Config;
 import com.proto781m.wrenchslot.WrenchSlot;
 import com.proto781m.wrenchslot.curio.CurioWrench;
+import com.proto781m.wrenchslot.logic.WrenchActions;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.world.InteractionHand;
@@ -14,6 +15,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import top.theillusivec4.curios.api.CuriosApi;
@@ -44,10 +46,10 @@ public final class ServerEvents {
     }
 
     /**
-     * The client always sends the vanilla use packet as well (1.21.1 uses
-     * client-side prediction). The wrench action itself is handled by
-     * {@code WrenchActionPayload}; this handler only cancels the vanilla
-     * interaction so a wrenchable block is not used twice.
+     * 1.21.1 sends the vanilla use packet through client-side prediction even
+     * when the client cancels the interaction. Cancel that packet server-side
+     * when it corresponds to a wrench action we already received, so the block
+     * is not used twice.
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -60,6 +62,9 @@ public final class ServerEvents {
 
         Player player = event.getEntity();
         if (!player.mayBuild() || player.isSpectator() || !CurioWrench.has(player)) {
+            return;
+        }
+        if (!WrenchActions.hasPending(player, event.getPos())) {
             return;
         }
         if (!player.canInteractWithBlock(event.getPos(), 1.0D)) {
@@ -95,5 +100,10 @@ public final class ServerEvents {
         }
 
         minecart.hurt(minecart.damageSources().playerAttack(player), 100);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        WrenchActions.clearPending(event.getEntity());
     }
 }

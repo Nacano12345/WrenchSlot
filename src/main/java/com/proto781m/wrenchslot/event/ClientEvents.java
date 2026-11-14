@@ -19,6 +19,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Client-side input handling for the empty-hand wrench actions.
+ *
+ * <p>This mod's primary modifier (Ctrl by default) must be held; Create's
+ * original primary modifier (sneak) acts as the secondary modifier and is
+ * evaluated server-side.
  */
 @EventBusSubscriber(modid = WrenchSlot.MOD_ID, value = Dist.CLIENT)
 public final class ClientEvents {
@@ -35,6 +39,9 @@ public final class ClientEvents {
             return;
         }
         if (!event.getItemStack().isEmpty() || !Config.enabled()) {
+            return;
+        }
+        if (!Keybinds.MODIFIER.isDown()) {
             return;
         }
 
@@ -54,8 +61,7 @@ public final class ClientEvents {
                 hit.getBlockPos(),
                 hit.getDirection(),
                 hit.getLocation(),
-                hit.isInside(),
-                Keybinds.DISMANTLE.isDown()));
+                hit.isInside()));
 
         // Consume the client interaction; the server executes the action from
         // our own packet and cancels the vanilla use there.

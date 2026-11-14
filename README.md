@@ -20,16 +20,20 @@ Create's wrench, so the wrench can be used without occupying a hand.
 
 | Input | Action |
 | --- | --- |
-| Right-click a wrenchable block | **Rotate** (same as wrench right-click) |
-| Hold `Left Ctrl` + right-click | **Dismantle** (same as sneak + wrench) |
-| Create's *Open Block Rotation Menu* key | Open the block rotation menu |
+| Hold `Left Ctrl` (this mod's modifier) + right-click | **Rotate** |
+| Hold `Left Ctrl` + sneak (`Shift`) + right-click | **Dismantle** |
+| Hold `Left Ctrl` + Create's *Open Block Rotation Menu* key | Open the block rotation menu |
 | Left-click a minecart | Instantly destroy it |
 
 Notes:
 
-- `Left Ctrl` is a normal key bind and can be changed in **Options → Controls → Key Binds → Wrench Slot**.
-- Create's *Open Block Rotation Menu* is unbound by default. Bind it once in the controls menu;
-  this mod makes it work while the wrench is in the Curios slot.
+- `Left Ctrl` is this mod's primary modifier and can be changed in
+  **Options → Controls → Key Binds → Wrench Slot**.
+- Sneaking is Create's original primary modifier and acts as this mod's secondary
+  modifier. It is the normal vanilla sneak key.
+- Without the modifier, right-clicking a wrenchable block behaves like vanilla.
+- Create's *Open Block Rotation Menu* is unbound by default. Bind it once in the
+  controls menu; this mod makes it work while the wrench is in the Curios slot.
 - Only blocks related to the wrench are intercepted (`IWrenchable` blocks and Create's
   `wrench_pickup` tag, e.g. shulker boxes). Chests, buttons and other blocks keep their
   vanilla behaviour.

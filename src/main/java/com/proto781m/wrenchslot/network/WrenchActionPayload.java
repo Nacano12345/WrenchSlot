@@ -13,13 +13,13 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * An empty-hand wrench action requested by the client.
+ * An empty-hand wrench action requested by the client while this mod's primary
+ * modifier is held.
  *
- * <p>The client cancels the vanilla interaction and sends this packet instead,
- * so the action is independent of the target block's own client-side use
- * result.
+ * <p>The action type is decided server-side from the player's sneaking state:
+ * not sneaking rotates, sneaking dismantles.
  */
-public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside, boolean dismantle)
+public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside)
         implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<WrenchActionPayload> TYPE =
@@ -35,13 +35,11 @@ public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolea
                         buf.writeDouble(payload.hit().y);
                         buf.writeDouble(payload.hit().z);
                         buf.writeBoolean(payload.inside());
-                        buf.writeBoolean(payload.dismantle());
                     },
                     buf -> new WrenchActionPayload(
                             BlockPos.STREAM_CODEC.decode(buf),
                             Direction.STREAM_CODEC.decode(buf),
                             new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
-                            buf.readBoolean(),
                             buf.readBoolean()));
 
     @Override
@@ -50,10 +48,11 @@ public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolea
     }
 
     public static void handle(WrenchActionPayload payload, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.player() instanceof ServerPlayer player) {
-                WrenchActions.perform(player, payload);
-            }
-        });
+        if (context.player() instanceof ServerPlayer player) {
+            // Mark the pending action immediately (before enqueueWork) so the
+            // vanilla use packet that follows can be recognised and cancelled.
+            WrenchActions.markPending(player, payload.pos());
+            context.enqueueWork(() -> WrenchActions.perform(player, payload));
+        }
     }
 }
