@@ -4,6 +4,6 @@
   "icon": "wrenchslot:slot/wrench_slot",
   "validators": ["wrenchslot:create_wrench"],
   "add_cosmetic": false,
-  "use_native_gui": false,
+  "use_native_gui": true,
   "drop_rule": "ALWAYS_DROP"
 }
