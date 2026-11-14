@@ -1,0 +1,9 @@
+{
+  "order": 150,
+  "size": 1,
+  "icon": "wrenchslot:slot/wrench_slot",
+  "validators": ["wrenchslot:create_wrench"],
+  "add_cosmetic": false,
+  "use_native_gui": false,
+  "drop_rule": "ALWAYS_DROP"
+}

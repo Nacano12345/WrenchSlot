@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.proto781m.wrenchslot.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "RadialWrenchHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

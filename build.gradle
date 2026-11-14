@@ -68,6 +68,38 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     mavenLocal()
+    // Create
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+    maven {
+        name = 'CreateMod'
+        url = 'https://maven.createmod.net'
+    }
+    maven {
+        name = 'Registrate'
+        url = 'https://maven.ithundxr.dev/snapshots'
+    }
+    // Curios
+    maven {
+        name = 'Curios'
+        url = 'https://maven.theillusivec4.top/'
+    }
+}
+
+dependencies {
+    // Create is a hard dependency.
+    implementation "maven.modrinth:create:${create_version}"
+
+    // Curios API is a hard dependency.
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+
+    // Compile-time dependencies of Create. They are shipped inside the Create jar
+    // at runtime through Jar-in-Jar, so they are not needed on the runtime classpath.
+    compileOnly "com.tterrag.registrate:Registrate:${registrate_version}"
+    compileOnly "net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}"
+    compileOnly "dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}"
 }
 
 // Expands the properties in src/main/templates (neoforge.mods.toml) into the jar.
