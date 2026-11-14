@@ -54,11 +54,11 @@ public final class WrenchActions {
 
         InteractionResult result;
         if (state.getBlock() instanceof IWrenchable wrenchable) {
-            result = payload.rotate()
-                    ? wrenchable.onWrenched(state, context)
-                    : wrenchable.onSneakWrenched(state, context);
+            result = payload.dismantle()
+                    ? wrenchable.onSneakWrenched(state, context)
+                    : wrenchable.onWrenched(state, context);
         } else {
-            result = payload.rotate() ? InteractionResult.PASS : WrenchPickup.pickup(context);
+            result = payload.dismantle() ? WrenchPickup.pickup(context) : InteractionResult.PASS;
         }
 
         if (result.consumesAction()) {

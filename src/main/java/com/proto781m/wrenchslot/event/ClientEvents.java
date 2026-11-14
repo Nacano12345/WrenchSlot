@@ -55,7 +55,7 @@ public final class ClientEvents {
                 hit.getDirection(),
                 hit.getLocation(),
                 hit.isInside(),
-                Keybinds.ROTATE.isDown()));
+                Keybinds.DISMANTLE.isDown()));
 
         // Consume the client interaction; the server executes the action from
         // our own packet and cancels the vanilla use there.

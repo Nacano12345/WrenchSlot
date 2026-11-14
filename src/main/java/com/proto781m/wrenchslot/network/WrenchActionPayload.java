@@ -19,7 +19,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * so the action is independent of the target block's own client-side use
  * result.
  */
-public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside, boolean rotate)
+public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside, boolean dismantle)
         implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<WrenchActionPayload> TYPE =
@@ -35,7 +35,7 @@ public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolea
                         buf.writeDouble(payload.hit().y);
                         buf.writeDouble(payload.hit().z);
                         buf.writeBoolean(payload.inside());
-                        buf.writeBoolean(payload.rotate());
+                        buf.writeBoolean(payload.dismantle());
                     },
                     buf -> new WrenchActionPayload(
                             BlockPos.STREAM_CODEC.decode(buf),

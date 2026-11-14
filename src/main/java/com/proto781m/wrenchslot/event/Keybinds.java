@@ -10,8 +10,8 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Key bindings. Holding the rotate key while right-clicking rotates instead of
- * dismantling.
+ * Key bindings. Right-clicking with an empty hand rotates; holding the
+ * dismantle key while right-clicking dismantles instead.
  */
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = WrenchSlot.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -19,10 +19,10 @@ public final class Keybinds {
 
     public static final String CATEGORY = "key.categories.wrenchslot";
 
-    public static final KeyMapping ROTATE = new KeyMapping(
-            "key.wrenchslot.rotate",
+    public static final KeyMapping DISMANTLE = new KeyMapping(
+            "key.wrenchslot.dismantle",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_R,
+            GLFW.GLFW_KEY_LEFT_CONTROL,
             CATEGORY);
 
     private Keybinds() {
@@ -30,6 +30,6 @@ public final class Keybinds {
 
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
-        event.register(ROTATE);
+        event.register(DISMANTLE);
     }
 }
