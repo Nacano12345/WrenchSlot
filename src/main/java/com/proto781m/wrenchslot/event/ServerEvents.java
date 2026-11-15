@@ -4,8 +4,6 @@ import com.proto781m.wrenchslot.Config;
 import com.proto781m.wrenchslot.WrenchSlot;
 import com.proto781m.wrenchslot.curio.CurioWrench;
 import com.proto781m.wrenchslot.logic.WrenchActions;
-import com.simibubi.create.AllTags;
-import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -46,10 +44,11 @@ public final class ServerEvents {
     }
 
     /**
-     * 1.21.1 sends the vanilla use packet through client-side prediction even
-     * when the client cancels the interaction. Cancel that packet server-side
-     * when it corresponds to a wrench action we already received, so the block
-     * is not used twice.
+     * In wrench mode the client cancels its interaction and sends an action
+     * packet; the vanilla use packet is still sent by client-side prediction.
+     * Whenever a pending action exists, cancel that use so the held item is
+     * never placed or used by vanilla. This intentionally covers any block:
+     * the action itself validates whether it is a wrench action.
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -67,23 +66,17 @@ public final class ServerEvents {
         if (!player.canInteractWithBlock(event.getPos(), 1.0D)) {
             return;
         }
-
-        BlockState state = event.getLevel().getBlockState(event.getPos());
-        boolean wrenchBlock = state.getBlock() instanceof IWrenchable
-                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state);
-        if (!wrenchBlock) {
+        if (!WrenchActions.hasPending(player, event.getPos())) {
             return;
         }
 
-        boolean pending = WrenchActions.hasPending(player, event.getPos());
-        WrenchSlot.LOGGER.info("Server wrench use: item={}, pending={}, block={}, pos={}",
-                event.getItemStack(), pending, state, event.getPos());
+        WrenchActions.clearPending(player);
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
 
-        if (pending) {
-            WrenchActions.clearPending(player);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-        }
+        BlockState state = event.getLevel().getBlockState(event.getPos());
+        WrenchSlot.LOGGER.info("Server wrench use: item={}, block={}, pos={}",
+                event.getItemStack(), state, event.getPos());
     }
 
     /**

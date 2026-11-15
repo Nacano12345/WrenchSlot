@@ -78,8 +78,7 @@ public final class WrenchActions {
             // disappear and both sides agree on the selected hotbar slot.
             WrenchSlot.LOGGER.warn("Hand state mismatch (client empty={}, server empty={}); resyncing inventory",
                     clientEmpty, serverEmpty);
-            player.containerMenu.broadcastFullState();
-            player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
+            resyncInventory(player);
         }
 
         if (!Config.allowNonEmptyHand() && !serverEmpty) {
@@ -148,7 +147,25 @@ public final class WrenchActions {
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, true);
             resyncBlock(player, level, pos);
+            resyncInventory(player);
         }
+    }
+
+    /**
+     * The wrench action can change the player's inventory (dismantle drops).
+     * Send a full inventory state, and a second one next tick so client-side
+     * predictions cannot leave a ghost item or a stale selected slot.
+     */
+    private static void resyncInventory(ServerPlayer player) {
+        player.inventoryMenu.broadcastFullState();
+        player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
+        MinecraftServer server = player.server;
+        server.tell(new TickTask(server.getTickCount() + 1, () -> {
+            if (!player.isRemoved()) {
+                player.inventoryMenu.broadcastFullState();
+                player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
+            }
+        }));
     }
 
     /**

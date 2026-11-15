@@ -4,13 +4,10 @@ import com.proto781m.wrenchslot.Config;
 import com.proto781m.wrenchslot.WrenchSlot;
 import com.proto781m.wrenchslot.curio.CurioWrench;
 import com.proto781m.wrenchslot.network.WrenchActionPayload;
-import com.simibubi.create.AllTags;
-import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,11 +16,12 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Client-side input handling for the empty-hand wrench actions.
+ * Client-side input handling.
  *
- * <p>This mod's primary modifier (Ctrl by default) must be held; Create's
- * original primary modifier (sneak) acts as the secondary modifier and is
- * evaluated server-side.
+ * <p>Holding this mod's primary modifier (Ctrl by default) puts the player into
+ * "wrench mode": all right-click interactions are handed to the mod, so the
+ * held item is never placed or used by vanilla. The server decides whether the
+ * wrench action is actually allowed (block type, main hand, config).
  */
 @EventBusSubscriber(modid = WrenchSlot.MOD_ID, value = Dist.CLIENT)
 public final class ClientEvents {
@@ -33,48 +31,30 @@ public final class ClientEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!event.getLevel().isClientSide() || event.isCanceled()) {
+        if (!event.getLevel().isClientSide() || event.isCanceled() || !Config.enabled()) {
             return;
         }
-        if (!Config.enabled()) {
-            return;
-        }
-
-        BlockState state = event.getLevel().getBlockState(event.getPos());
-        boolean wrenchBlock = state.getBlock() instanceof IWrenchable
-                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state);
-        if (!wrenchBlock) {
+        if (event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
 
         Player player = event.getEntity();
-        boolean curio = CurioWrench.has(player);
-        boolean modifier = Keybinds.isModifierDown();
-        // The entity's sneaking flag can lag a tick behind the key press, so
-        // also read the physical Shift key.
-        boolean dismantle = player.isShiftKeyDown() || Screen.hasShiftDown();
-
-        if (event.getHand() != InteractionHand.MAIN_HAND) {
-            WrenchSlot.LOGGER.info("Client wrench offhand: item={}, curio={}, modifier={}, block={}",
-                    event.getItemStack(), curio, modifier, state);
+        if (!Keybinds.isModifierDown() || !CurioWrench.has(player)) {
+            return;
+        }
+        // Do not hijack the vanilla sprint key while actually sprinting.
+        if (player.isSprinting() && Keybinds.isSprintKey()) {
             return;
         }
 
-        WrenchSlot.LOGGER.info("Client wrench: item={}, curio={}, modifier={}, sneak={}, block={}, pos={}",
-                event.getItemStack(), curio, modifier, dismantle, state, event.getPos());
-
-        if (!modifier || !curio) {
-            return;
-        }
-
-        // Always consume the vanilla interaction while the modifier is held,
-        // even if the main hand is not empty. Otherwise the held item would be
-        // used (e.g. a block would be placed) before the wrench action runs.
-        // The server decides whether the wrench action itself is allowed.
         BlockHitResult hit = event.getHitVec();
+        boolean dismantle = player.isShiftKeyDown() || Screen.hasShiftDown();
         boolean emptyHand = event.getItemStack().isEmpty();
-        WrenchSlot.LOGGER.info("Sending wrench action: pos={}, hand={}, dismantle={}, emptyHand={}",
-                hit.getBlockPos(), event.getHand(), dismantle, emptyHand);
+        WrenchSlot.LOGGER.info(
+                "Wrench mode: item={}, sneak={}, emptyHand={}, block={}, pos={}",
+                event.getItemStack(), dismantle, emptyHand,
+                event.getLevel().getBlockState(event.getPos()), hit.getBlockPos());
+
         PacketDistributor.sendToServer(new WrenchActionPayload(
                 hit.getBlockPos(),
                 hit.getDirection(),
@@ -83,6 +63,8 @@ public final class ClientEvents {
                 dismantle,
                 emptyHand));
 
+        // Consume the interaction in wrench mode, even for non-wrench blocks,
+        // so the held item cannot be placed while the modifier is held.
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }

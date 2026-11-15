@@ -3,6 +3,7 @@ package com.proto781m.wrenchslot.event;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.proto781m.wrenchslot.WrenchSlot;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -53,5 +54,11 @@ public final class Keybinds {
             return Screen.hasControlDown();
         }
         return false;
+    }
+
+    /** @return whether this mod's modifier is also bound to the vanilla sprint key */
+    public static boolean isSprintKey() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.options != null && MODIFIER.getKey().equals(minecraft.options.keySprint.getKey());
     }
 }
