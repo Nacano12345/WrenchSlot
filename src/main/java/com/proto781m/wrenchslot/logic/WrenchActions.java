@@ -82,9 +82,9 @@ public final class WrenchActions {
             player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
         }
 
-        if (!Config.allowNonEmptyHand() && (!clientEmpty || !serverEmpty)) {
-            WrenchSlot.LOGGER.info("Wrench action skipped: main hand is not empty (client={}, server={})",
-                    payload.emptyHand(), player.getMainHandItem());
+        if (!Config.allowNonEmptyHand() && !serverEmpty) {
+            WrenchSlot.LOGGER.info("Wrench action skipped: server main hand is not empty ({})",
+                    player.getMainHandItem());
             return;
         }
 
