@@ -4,10 +4,13 @@ import com.proto781m.wrenchslot.Config;
 import com.proto781m.wrenchslot.WrenchSlot;
 import com.proto781m.wrenchslot.curio.CurioWrench;
 import com.proto781m.wrenchslot.network.WrenchActionPayload;
+import com.simibubi.create.AllTags;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -47,13 +50,20 @@ public final class ClientEvents {
             return;
         }
 
+        BlockState state = event.getLevel().getBlockState(event.getPos());
+        boolean wrenchBlock = state.getBlock() instanceof IWrenchable
+                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state);
+        if (!wrenchBlock) {
+            // Not a wrench target: let vanilla handle chests, placement, etc.
+            return;
+        }
+
         BlockHitResult hit = event.getHitVec();
         boolean dismantle = player.isShiftKeyDown() || Screen.hasShiftDown();
         boolean emptyHand = event.getItemStack().isEmpty();
         WrenchSlot.LOGGER.info(
                 "Wrench mode: item={}, sneak={}, emptyHand={}, block={}, pos={}",
-                event.getItemStack(), dismantle, emptyHand,
-                event.getLevel().getBlockState(event.getPos()), hit.getBlockPos());
+                event.getItemStack(), dismantle, emptyHand, state, hit.getBlockPos());
 
         PacketDistributor.sendToServer(new WrenchActionPayload(
                 hit.getBlockPos(),
