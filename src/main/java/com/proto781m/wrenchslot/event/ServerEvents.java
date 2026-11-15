@@ -56,9 +56,6 @@ public final class ServerEvents {
         if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
-        if (!event.getItemStack().isEmpty() && !Config.allowNonEmptyHand()) {
-            return;
-        }
         if (!Config.enabled()) {
             return;
         }
@@ -67,16 +64,23 @@ public final class ServerEvents {
         if (!player.mayBuild() || player.isSpectator() || !CurioWrench.has(player)) {
             return;
         }
-        if (!WrenchActions.hasPending(player, event.getPos())) {
-            return;
-        }
         if (!player.canInteractWithBlock(event.getPos(), 1.0D)) {
             return;
         }
 
         BlockState state = event.getLevel().getBlockState(event.getPos());
-        if (state.getBlock() instanceof IWrenchable
-                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state)) {
+        boolean wrenchBlock = state.getBlock() instanceof IWrenchable
+                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state);
+        if (!wrenchBlock) {
+            return;
+        }
+
+        boolean pending = WrenchActions.hasPending(player, event.getPos());
+        WrenchSlot.LOGGER.info("Server wrench use: item={}, pending={}, block={}, pos={}",
+                event.getItemStack(), pending, state, event.getPos());
+
+        if (pending) {
+            WrenchActions.clearPending(player);
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
         }

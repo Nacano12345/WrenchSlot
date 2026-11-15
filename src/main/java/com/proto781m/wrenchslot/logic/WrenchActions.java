@@ -49,6 +49,8 @@ public final class WrenchActions {
      */
     public static void markPending(ServerPlayer player, BlockPos pos) {
         PENDING.put(player.getUUID(), new Pending(pos, System.nanoTime()));
+        WrenchSlot.LOGGER.info("Wrench action request from {} at {}", player.getGameProfile().getName(),
+                pos);
     }
 
     public static boolean hasPending(Player player, BlockPos pos) {
@@ -64,6 +66,11 @@ public final class WrenchActions {
 
     public static void perform(ServerPlayer player, WrenchActionPayload payload) {
         if (!Config.enabled() || !player.mayBuild() || player.isSpectator()) {
+            return;
+        }
+        if (!Config.allowNonEmptyHand() && !player.getMainHandItem().isEmpty()) {
+            WrenchSlot.LOGGER.info("Wrench action skipped: main hand is not empty ({})",
+                    player.getMainHandItem());
             return;
         }
 

@@ -35,39 +35,47 @@ public final class ClientEvents {
         if (!event.getLevel().isClientSide() || event.isCanceled()) {
             return;
         }
-        if (event.getHand() != InteractionHand.MAIN_HAND) {
-            return;
-        }
-        if (!event.getItemStack().isEmpty() && !Config.allowNonEmptyHand()) {
-            return;
-        }
         if (!Config.enabled()) {
-            return;
-        }
-        if (!Keybinds.MODIFIER.isDown()) {
-            return;
-        }
-
-        Player player = event.getEntity();
-        if (!CurioWrench.has(player)) {
             return;
         }
 
         BlockState state = event.getLevel().getBlockState(event.getPos());
-        if (!(state.getBlock() instanceof IWrenchable)
-                && !AllTags.AllBlockTags.WRENCH_PICKUP.matches(state)) {
+        boolean wrenchBlock = state.getBlock() instanceof IWrenchable
+                || AllTags.AllBlockTags.WRENCH_PICKUP.matches(state);
+        if (!wrenchBlock) {
             return;
         }
 
+        Player player = event.getEntity();
+        boolean curio = CurioWrench.has(player);
+        boolean modifier = Keybinds.isModifierDown();
+
+        if (event.getHand() != InteractionHand.MAIN_HAND) {
+            WrenchSlot.LOGGER.info("Client wrench offhand: item={}, curio={}, modifier={}, block={}",
+                    event.getItemStack(), curio, modifier, state);
+            return;
+        }
+
+        WrenchSlot.LOGGER.info("Client wrench: item={}, curio={}, modifier={}, block={}, pos={}",
+                event.getItemStack(), curio, modifier, state, event.getPos());
+
+        if (!modifier || !curio) {
+            return;
+        }
+
+        // Always consume the vanilla interaction while the modifier is held,
+        // even if the main hand is not empty. Otherwise the held item would be
+        // used (e.g. a block would be placed) before the wrench action runs.
+        // The server decides whether the wrench action itself is allowed.
         BlockHitResult hit = event.getHitVec();
+        WrenchSlot.LOGGER.info("Sending wrench action: pos={}, hand={}",
+                hit.getBlockPos(), event.getHand());
         PacketDistributor.sendToServer(new WrenchActionPayload(
                 hit.getBlockPos(),
                 hit.getDirection(),
                 hit.getLocation(),
                 hit.isInside()));
 
-        // Consume the client interaction; the server executes the action from
-        // our own packet and cancels the vanilla use there.
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
