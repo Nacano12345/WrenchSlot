@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1 - 2026-11-15
+
+### Fixed
+
+- Dismantling could rotate instead of dismantle when the server's sneaking state lagged behind the click.
+  The action mode and hand state are now sent by the client.
+- Ghost items and client/server hand desync after dismantling; the inventory and selected hotbar slot are resynchronized.
+- Holding the wrench modifier no longer places the held item or causes a place/dismantle loop.
+- Non-wrench blocks (chests, etc.) pass through to vanilla while the modifier is held.
+- The Ctrl sprint-key conflict is handled: the mod does not activate while sprinting with that key.
+
 ## 1.0.0 - 2026-11-15
 
 Initial release.

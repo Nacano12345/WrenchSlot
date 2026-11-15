@@ -2,6 +2,8 @@
 
 <img src="src/main/resources/wrenchslot.png" width="128" alt="Wrench Slot icon">
 
+[![Build](https://github.com/Nacano12345/WrenchSlot/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Nacano12345/WrenchSlot/actions/workflows/build.yml)
+
 A Minecraft **NeoForge** mod that adds a [Curios](https://modrinth.com/mod/curios) slot for
 Create's wrench, so the wrench can be used without occupying a hand.
 

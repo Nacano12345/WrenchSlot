@@ -61,7 +61,7 @@ public final class ClientEvents {
         BlockHitResult hit = event.getHitVec();
         boolean dismantle = player.isShiftKeyDown() || Screen.hasShiftDown();
         boolean emptyHand = event.getItemStack().isEmpty();
-        WrenchSlot.LOGGER.info(
+        WrenchSlot.LOGGER.debug(
                 "Wrench mode: item={}, sneak={}, emptyHand={}, block={}, pos={}",
                 event.getItemStack(), dismantle, emptyHand, state, hit.getBlockPos());
 

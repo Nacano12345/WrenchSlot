@@ -75,7 +75,7 @@ public final class ServerEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
 
         BlockState state = event.getLevel().getBlockState(event.getPos());
-        WrenchSlot.LOGGER.info("Server wrench use: item={}, block={}, pos={}",
+        WrenchSlot.LOGGER.debug("Server wrench use: item={}, block={}, pos={}",
                 event.getItemStack(), state, event.getPos());
     }
 

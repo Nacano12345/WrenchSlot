@@ -50,7 +50,7 @@ public final class WrenchActions {
      */
     public static void markPending(ServerPlayer player, BlockPos pos) {
         PENDING.put(player.getUUID(), new Pending(pos, System.nanoTime()));
-        WrenchSlot.LOGGER.info("Wrench action request from {} at {}", player.getGameProfile().getName(),
+        WrenchSlot.LOGGER.debug("Wrench action request from {} at {}", player.getGameProfile().getName(),
                 pos);
     }
 
@@ -76,13 +76,13 @@ public final class WrenchActions {
             // The client is showing/using an item the server does not know
             // about (or vice versa). Force a full inventory sync so ghost items
             // disappear and both sides agree on the selected hotbar slot.
-            WrenchSlot.LOGGER.warn("Hand state mismatch (client empty={}, server empty={}); resyncing inventory",
+            WrenchSlot.LOGGER.debug("Hand state mismatch (client empty={}, server empty={}); resyncing inventory",
                     clientEmpty, serverEmpty);
             resyncInventory(player);
         }
 
         if (!Config.allowNonEmptyHand() && !serverEmpty) {
-            WrenchSlot.LOGGER.info("Wrench action skipped: server main hand is not empty ({})",
+            WrenchSlot.LOGGER.debug("Wrench action skipped: server main hand is not empty ({})",
                     player.getMainHandItem());
             return;
         }
@@ -141,7 +141,7 @@ public final class WrenchActions {
             after = level.getBlockState(pos);
         }
 
-        WrenchSlot.LOGGER.info("Wrench {} at {}: result={}, state after={}",
+        WrenchSlot.LOGGER.debug("Wrench {} at {}: result={}, state after={}",
                 dismantle ? "dismantle" : "rotate", pos, result, after);
 
         if (result.consumesAction()) {
