@@ -88,3 +88,7 @@ src/main/resources/
 ├── assets/wrenchslot/textures/slot/wrench_slot.png
 └── assets/wrenchslot/lang/{en_us,zh_cn}.json
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
