@@ -68,9 +68,9 @@ public final class WrenchActions {
         if (!Config.enabled() || !player.mayBuild() || player.isSpectator()) {
             return;
         }
-        if (!Config.allowNonEmptyHand() && !player.getMainHandItem().isEmpty()) {
-            WrenchSlot.LOGGER.info("Wrench action skipped: main hand is not empty ({})",
-                    player.getMainHandItem());
+        if (!Config.allowNonEmptyHand() && (!payload.emptyHand() || !player.getMainHandItem().isEmpty())) {
+            WrenchSlot.LOGGER.info("Wrench action skipped: main hand is not empty (client={}, server={})",
+                    payload.emptyHand(), player.getMainHandItem());
             return;
         }
 
@@ -92,10 +92,9 @@ public final class WrenchActions {
             return;
         }
 
-        // This mod's primary modifier is handled client-side (only Ctrl-click
-        // sends the packet). Create's original primary modifier, sneaking, is
-        // the secondary modifier here.
-        boolean dismantle = player.isShiftKeyDown();
+        // The client sends the modifier state with the action packet; the
+        // server's own sneaking state can lag behind by a tick or more.
+        boolean dismantle = payload.dismantle();
 
         BlockHitResult hitResult = new BlockHitResult(payload.hit(), payload.face(), pos, payload.inside());
         UseOnContext context = new WrenchUseContext(level, player, InteractionHand.MAIN_HAND,

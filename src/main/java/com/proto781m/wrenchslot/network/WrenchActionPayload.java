@@ -16,10 +16,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * An empty-hand wrench action requested by the client while this mod's primary
  * modifier is held.
  *
- * <p>The action type is decided server-side from the player's sneaking state:
- * not sneaking rotates, sneaking dismantles.
+ * <p>The action type and the client's main-hand state are sent by the client,
+ * because the server's sneaking state can lag behind the right click.
  */
-public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside)
+public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolean inside,
+                                  boolean dismantle, boolean emptyHand)
         implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<WrenchActionPayload> TYPE =
@@ -35,11 +36,15 @@ public record WrenchActionPayload(BlockPos pos, Direction face, Vec3 hit, boolea
                         buf.writeDouble(payload.hit().y);
                         buf.writeDouble(payload.hit().z);
                         buf.writeBoolean(payload.inside());
+                        buf.writeBoolean(payload.dismantle());
+                        buf.writeBoolean(payload.emptyHand());
                     },
                     buf -> new WrenchActionPayload(
                             BlockPos.STREAM_CODEC.decode(buf),
                             Direction.STREAM_CODEC.decode(buf),
                             new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
+                            buf.readBoolean(),
+                            buf.readBoolean(),
                             buf.readBoolean()));
 
     @Override

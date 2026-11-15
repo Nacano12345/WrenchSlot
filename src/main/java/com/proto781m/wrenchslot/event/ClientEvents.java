@@ -6,6 +6,7 @@ import com.proto781m.wrenchslot.curio.CurioWrench;
 import com.proto781m.wrenchslot.network.WrenchActionPayload;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -49,6 +50,9 @@ public final class ClientEvents {
         Player player = event.getEntity();
         boolean curio = CurioWrench.has(player);
         boolean modifier = Keybinds.isModifierDown();
+        // The entity's sneaking flag can lag a tick behind the key press, so
+        // also read the physical Shift key.
+        boolean dismantle = player.isShiftKeyDown() || Screen.hasShiftDown();
 
         if (event.getHand() != InteractionHand.MAIN_HAND) {
             WrenchSlot.LOGGER.info("Client wrench offhand: item={}, curio={}, modifier={}, block={}",
@@ -56,8 +60,8 @@ public final class ClientEvents {
             return;
         }
 
-        WrenchSlot.LOGGER.info("Client wrench: item={}, curio={}, modifier={}, block={}, pos={}",
-                event.getItemStack(), curio, modifier, state, event.getPos());
+        WrenchSlot.LOGGER.info("Client wrench: item={}, curio={}, modifier={}, sneak={}, block={}, pos={}",
+                event.getItemStack(), curio, modifier, dismantle, state, event.getPos());
 
         if (!modifier || !curio) {
             return;
@@ -68,13 +72,16 @@ public final class ClientEvents {
         // used (e.g. a block would be placed) before the wrench action runs.
         // The server decides whether the wrench action itself is allowed.
         BlockHitResult hit = event.getHitVec();
-        WrenchSlot.LOGGER.info("Sending wrench action: pos={}, hand={}",
-                hit.getBlockPos(), event.getHand());
+        boolean emptyHand = event.getItemStack().isEmpty();
+        WrenchSlot.LOGGER.info("Sending wrench action: pos={}, hand={}, dismantle={}, emptyHand={}",
+                hit.getBlockPos(), event.getHand(), dismantle, emptyHand);
         PacketDistributor.sendToServer(new WrenchActionPayload(
                 hit.getBlockPos(),
                 hit.getDirection(),
                 hit.getLocation(),
-                hit.isInside()));
+                hit.isInside(),
+                dismantle,
+                emptyHand));
 
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
