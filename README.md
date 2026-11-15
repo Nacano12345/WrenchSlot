@@ -1,5 +1,7 @@
 # Wrench Slot
 
+<img src="src/main/resources/wrenchslot.png" width="128" alt="Wrench Slot icon">
+
 A Minecraft **NeoForge** mod that adds a [Curios](https://modrinth.com/mod/curios) slot for
 Create's wrench, so the wrench can be used without occupying a hand.
 
@@ -92,3 +94,8 @@ src/main/resources/
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Credits
+
+- Curios logo: [Curios API](https://modrinth.com/mod/curios) by TheIllusiveC4
+- Create wrench: [Create](https://modrinth.com/mod/create) by simibubi
