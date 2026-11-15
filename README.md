@@ -63,8 +63,8 @@ Notes:
 If the NeoForged Maven is unreachable, point Gradle at your proxy, for example:
 
 ```bash
-JAVA_TOOL_OPTIONS="-Dhttps.proxyHost=192.168.0.122 -Dhttps.proxyPort=10808 \
-  -Dhttp.proxyHost=192.168.0.122 -Dhttp.proxyPort=10808" ./gradlew build
+JAVA_TOOL_OPTIONS="-Dhttps.proxyHost=<proxy-host> -Dhttps.proxyPort=<proxy-port> \
+  -Dhttp.proxyHost=<proxy-host> -Dhttp.proxyPort=<proxy-port>" ./gradlew build
 ```
 
 ### Project layout
