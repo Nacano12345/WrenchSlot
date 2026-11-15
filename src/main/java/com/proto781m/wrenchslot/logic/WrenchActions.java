@@ -1,6 +1,7 @@
 package com.proto781m.wrenchslot.logic;
 
 import com.proto781m.wrenchslot.Config;
+import com.proto781m.wrenchslot.WrenchSlot;
 import com.proto781m.wrenchslot.curio.CurioWrench;
 import com.proto781m.wrenchslot.network.WrenchActionPayload;
 import com.proto781m.wrenchslot.util.WrenchPickup;
@@ -8,6 +9,9 @@ import com.proto781m.wrenchslot.util.WrenchUseContext;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -91,16 +95,54 @@ public final class WrenchActions {
                 wrench, hitResult);
 
         InteractionResult result;
-        if (state.getBlock() instanceof IWrenchable wrenchable) {
-            result = dismantle
-                    ? wrenchable.onSneakWrenched(state, context)
-                    : wrenchable.onWrenched(state, context);
-        } else {
-            result = dismantle ? WrenchPickup.pickup(context) : InteractionResult.PASS;
+        boolean failed = false;
+        try {
+            if (state.getBlock() instanceof IWrenchable wrenchable) {
+                result = dismantle
+                        ? wrenchable.onSneakWrenched(state, context)
+                        : wrenchable.onWrenched(state, context);
+            } else {
+                result = dismantle ? WrenchPickup.pickup(context) : InteractionResult.PASS;
+            }
+        } catch (RuntimeException ex) {
+            WrenchSlot.LOGGER.error("Wrench action failed at {}", pos, ex);
+            result = InteractionResult.FAIL;
+            failed = true;
         }
+
+        // Some Create blocks intentionally turn into another block when
+        // dismantled (encased shafts, cart assemblers, ...). If the state did
+        // not change at all, the dismantle failed half-way: items may already
+        // have been added, so make sure the block is gone.
+        BlockState after = level.getBlockState(pos);
+        if (dismantle && (result.consumesAction() || failed) && after.equals(state)) {
+            WrenchSlot.LOGGER.warn("Dismantle left the block unchanged at {} ({}); removing it",
+                    pos, state);
+            level.destroyBlock(pos, false);
+            after = level.getBlockState(pos);
+        }
+
+        WrenchSlot.LOGGER.info("Wrench {} at {}: result={}, state after={}",
+                dismantle ? "dismantle" : "rotate", pos, result, after);
 
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, true);
+            resyncBlock(player, level, pos);
         }
+    }
+
+    /**
+     * The action runs outside the vanilla use packet's block-change sequence,
+     * so explicitly resync the block. The delayed update lands after the
+     * client's prediction acknowledgement and clears any ghost block.
+     */
+    private static void resyncBlock(ServerPlayer player, Level level, BlockPos pos) {
+        player.connection.send(new ClientboundBlockUpdatePacket(level, pos));
+        MinecraftServer server = player.server;
+        server.tell(new TickTask(server.getTickCount() + 1, () -> {
+            if (!player.isRemoved()) {
+                player.connection.send(new ClientboundBlockUpdatePacket(level, pos));
+            }
+        }));
     }
 }
