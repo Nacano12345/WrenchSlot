@@ -56,7 +56,10 @@ public final class ServerEvents {
         if (event.getLevel().isClientSide() || event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
-        if (!event.getItemStack().isEmpty() || !Config.enabled()) {
+        if (!event.getItemStack().isEmpty() && !Config.allowNonEmptyHand()) {
+            return;
+        }
+        if (!Config.enabled()) {
             return;
         }
 
@@ -89,7 +92,7 @@ public final class ServerEvents {
         if (player.level().isClientSide() || event.isCanceled() || !Config.minecartKillEnabled()) {
             return;
         }
-        if (!player.getMainHandItem().isEmpty()) {
+        if (!Config.allowNonEmptyHand() && !player.getMainHandItem().isEmpty()) {
             return;
         }
         if (!(event.getTarget() instanceof AbstractMinecart minecart)) {

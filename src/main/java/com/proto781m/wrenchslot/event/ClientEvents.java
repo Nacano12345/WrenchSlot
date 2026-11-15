@@ -38,7 +38,10 @@ public final class ClientEvents {
         if (event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
-        if (!event.getItemStack().isEmpty() || !Config.enabled()) {
+        if (!event.getItemStack().isEmpty() && !Config.allowNonEmptyHand()) {
+            return;
+        }
+        if (!Config.enabled()) {
             return;
         }
         if (!Keybinds.MODIFIER.isDown()) {

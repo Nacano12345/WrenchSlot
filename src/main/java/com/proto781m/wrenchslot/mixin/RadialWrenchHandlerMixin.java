@@ -26,7 +26,7 @@ public abstract class RadialWrenchHandlerMixin {
     )
     private static ItemStack wrenchslot$useCurioWrenchForRotationMenu(LocalPlayer player) {
         ItemStack mainHand = player.getMainHandItem();
-        if (!mainHand.isEmpty()
+        if ((!mainHand.isEmpty() && !Config.allowNonEmptyHand())
                 || !Config.rotationMenuEnabled()
                 || !Keybinds.MODIFIER.isDown()) {
             return mainHand;

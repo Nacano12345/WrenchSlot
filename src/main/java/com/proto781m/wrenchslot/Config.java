@@ -10,6 +10,7 @@ public final class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue ENABLED;
+    public static final ModConfigSpec.BooleanValue ALLOW_NON_EMPTY_HAND;
     public static final ModConfigSpec.BooleanValue ENABLE_MINECART_KILL;
     public static final ModConfigSpec.BooleanValue ENABLE_ROTATION_MENU;
     public static final ModConfigSpec SPEC;
@@ -18,11 +19,17 @@ public final class Config {
         BUILDER.push("general");
 
         ENABLED = BUILDER
-                .comment("Allow the Create wrench stored in the Curios wrench slot to be used with an empty hand.")
+                .comment("Allow the Create wrench stored in the Curios wrench slot to be used.")
                 .define("enabled", true);
 
+        ALLOW_NON_EMPTY_HAND = BUILDER
+                .comment("Allow wrench actions while holding an item in the main hand.",
+                        "When false (default), the main hand must be empty.")
+                .define("allowNonEmptyHand", false);
+
         ENABLE_MINECART_KILL = BUILDER
-                .comment("Empty-hand attacks instantly destroy minecarts, just like the Create wrench.")
+                .comment("Attacks instantly destroy minecarts, just like the Create wrench.",
+                        "Requires an empty main hand unless allowNonEmptyHand is enabled.")
                 .define("enableMinecartKill", true);
 
         ENABLE_ROTATION_MENU = BUILDER
@@ -39,6 +46,10 @@ public final class Config {
 
     public static boolean enabled() {
         return get(ENABLED);
+    }
+
+    public static boolean allowNonEmptyHand() {
+        return get(ALLOW_NON_EMPTY_HAND);
     }
 
     public static boolean minecartKillEnabled() {

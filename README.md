@@ -37,7 +37,8 @@ Notes:
 - Only blocks related to the wrench are intercepted (`IWrenchable` blocks and Create's
   `wrench_pickup` tag, e.g. shulker boxes). Chests, buttons and other blocks keep their
   vanilla behaviour.
-- Holding any item in the main hand keeps normal vanilla behaviour.
+- Holding any item in the main hand keeps normal vanilla behaviour by default;
+  enable `allowNonEmptyHand` to use the wrench actions while holding an item.
 - The wrench drops on death (`ALWAYS_DROP` Curios rule).
 
 ## Configuration
@@ -46,8 +47,9 @@ Notes:
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `enabled` | `true` | Master switch for the empty-hand wrench behaviour |
-| `enableMinecartKill` | `true` | Empty-hand attacks instantly destroy minecarts |
+| `enabled` | `true` | Master switch for the wrench slot behaviour |
+| `allowNonEmptyHand` | `false` | Allow wrench actions while holding an item in the main hand |
+| `enableMinecartKill` | `true` | Attacks instantly destroy minecarts |
 | `enableRotationMenu` | `true` | Allow Create's rotation menu with the Curios wrench |
 
 ## Development
