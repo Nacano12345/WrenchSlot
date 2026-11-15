@@ -62,35 +62,6 @@ Notes:
 ./gradlew runServer    # dev server
 ```
 
-If the NeoForged Maven is unreachable, point Gradle at your proxy, for example:
-
-```bash
-JAVA_TOOL_OPTIONS="-Dhttps.proxyHost=<proxy-host> -Dhttps.proxyPort=<proxy-port> \
-  -Dhttp.proxyHost=<proxy-host> -Dhttp.proxyPort=<proxy-port>" ./gradlew build
-```
-
-### Project layout
-
-```
-src/main/java/com/proto781m/wrenchslot/
-├── WrenchSlot.java                 # mod entry point, payload + Curios predicate
-├── Config.java                     # common config
-├── curio/CurioWrench.java          # lookup of the equipped wrench
-├── event/ClientEvents.java         # empty-hand right click -> action packet
-├── event/ServerEvents.java         # cancels vanilla use, minecart kill
-├── event/Keybinds.java             # R key bind
-├── logic/WrenchActions.java        # server-side validation and execution
-├── network/WrenchActionPayload.java
-├── util/WrenchUseContext.java      # UseOnContext carrying the Curios stack
-├── util/WrenchPickup.java          # wrench_pickup block handling
-└── mixin/RadialWrenchHandlerMixin.java
-src/main/resources/
-├── data/wrenchslot/curios/slots/wrench.json
-├── data/wrenchslot/curios/entities/player.json
-├── assets/wrenchslot/textures/slot/wrench_slot.png
-└── assets/wrenchslot/lang/{en_us,zh_cn}.json
-```
-
 ## License
 
 MIT — see [LICENSE](LICENSE).
