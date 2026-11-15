@@ -10,6 +10,7 @@ import com.simibubi.create.AllTags;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
@@ -68,7 +69,20 @@ public final class WrenchActions {
         if (!Config.enabled() || !player.mayBuild() || player.isSpectator()) {
             return;
         }
-        if (!Config.allowNonEmptyHand() && (!payload.emptyHand() || !player.getMainHandItem().isEmpty())) {
+
+        boolean clientEmpty = payload.emptyHand();
+        boolean serverEmpty = player.getMainHandItem().isEmpty();
+        if (clientEmpty != serverEmpty) {
+            // The client is showing/using an item the server does not know
+            // about (or vice versa). Force a full inventory sync so ghost items
+            // disappear and both sides agree on the selected hotbar slot.
+            WrenchSlot.LOGGER.warn("Hand state mismatch (client empty={}, server empty={}); resyncing inventory",
+                    clientEmpty, serverEmpty);
+            player.containerMenu.broadcastFullState();
+            player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
+        }
+
+        if (!Config.allowNonEmptyHand() && (!clientEmpty || !serverEmpty)) {
             WrenchSlot.LOGGER.info("Wrench action skipped: main hand is not empty (client={}, server={})",
                     payload.emptyHand(), player.getMainHandItem());
             return;
